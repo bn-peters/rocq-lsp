@@ -261,6 +261,7 @@ today we offer two kinds of extra information on errors:
 
 - range of the full sentence that displayed the error,
 - if the error was on a Require, information about the library that failed.
+- if the error occurred while checking a named proof, the name of that proof.
 
 As of today, this extra data is passed via member parameters
 ```typescript
@@ -272,7 +273,8 @@ type failedRequire = {
 
 type DiagnosticsData = {
     sentenceRange ?: Range;
-    failedRequire ?: FailedRequire
+    failedRequire ?: FailedRequire;
+    proofName ?: string
 }
 ```
 
