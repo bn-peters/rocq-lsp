@@ -667,17 +667,20 @@ module Analysis : sig
       convenience), and will start the search from the first node in the list. *)
   val find_proof_start_nodes : Node.t list -> Node.t option
 end = struct
+  let is_proof_start ast =
+    match Vernac_classifier.classify_vernac (Node.Ast.to_coq ast) with
+    | Vernacextend.VtStartProof _ -> true
+    | _ -> false
+    | exception _ -> false
+
   (* Returns node before / after, will be replaced by the right structure, we
      can also do dynamic by looking at proof state *)
   let rec find_proof_start (node : Node.t option) =
     match node with
     | None -> None
     | Some ({ Node.ast = None; _ } as node) -> find_proof_start node.prev
-    | Some ({ ast = Some ast; _ } as node) -> (
-      match (Node.Ast.to_coq ast).CAst.v.Vernacexpr.expr with
-      | Vernacexpr.VernacSynPure (VernacStartTheoremProof _)
-      | VernacSynPure (VernacDefinition (_, _, ProveBody _)) -> Some node
-      | _ -> find_proof_start node.prev)
+    | Some ({ ast = Some ast; _ } as node) ->
+      if is_proof_start ast then Some node else find_proof_start node.prev
 
   let find_proof_start node = find_proof_start (Some node)
 
@@ -697,13 +700,13 @@ module Recovery : sig
     -> Coq.State.t
 end = struct
   let recovery_for_failed_qed ~token ~default nodes =
-    match Analysis.find_proof_start_nodes nodes with
-    | None -> Coq.Protect.E.ok (default, None)
-    | Some { range; state; prev; _ } -> (
-      if !Config.v.admit_on_bad_qed then
-        Memo.Admit.eval ~token state
-        |> Coq.Protect.E.map ~f:(fun state -> (state, Some range))
-      else
+    if !Config.v.admit_on_bad_qed then
+      Memo.Admit.eval ~token default
+      |> Coq.Protect.E.map ~f:(fun state -> (state, None))
+    else
+      match Analysis.find_proof_start_nodes nodes with
+      | None -> Coq.Protect.E.ok (default, None)
+      | Some { prev; _ } -> (
         match prev with
         | None -> Coq.Protect.E.ok (default, None)
         | Some { state; range; _ } -> Coq.Protect.E.ok (state, Some range))
