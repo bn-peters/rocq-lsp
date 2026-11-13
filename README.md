@@ -1,5 +1,15 @@
 # Rocq LSP <img align="right" height="42" src="./etc/img/inria-logo.png"/>  <!-- omit in toc -->
 
+> **This is the RocqSolid fork of rocq-lsp.** The `rocq-solid-9.x` branches
+> (Rocq 9.0, 9.1, 9.2) are upstream rocq-lsp 0.2.5 plus a small patch set used
+> by [RocqSolid](https://github.com/bn-peters/rocq-solid-mcp), an MCP server
+> for Rocq: diagnostics report the name of the proof they occur in
+> (`proofName`), proof-start detection uses the vernac classifier, and
+> recovery from a failed `Qed` admits the proof at its own state. Install with
+> `opam repo add rocq-solid https://github.com/bn-peters/rocq-solid-mcp-opam.git && opam install rocq-solid-mcp-lsp`.
+> Everything below is the upstream README.
+
+
 [![Github CI][ci-badge]][ci-link]
 
 > **⚠️ Repository Archived**
